@@ -5,6 +5,8 @@ ad-hoc mochitests for bug 822367
 NOTE: This test requires downloading a CSV file of top domains from Alexa's web site
 Also note: This test is quite a hack.
 
+//make tab object
+
 */
 const PREF_DISPLAY = "security.mixed_content.block_display_content";
 const PREF_ACTIVE = "security.mixed_content.block_active_content";
@@ -40,6 +42,12 @@ function test() {
   loadDomains();
 }
 
+//start.sh can be a bash script
+//crownjob is automated backgroudn test that runs something once a day
+//change so it's not a csv? just a text file with list of URLs
+//use python script to look at all the xml files by itself so you can run test every month
+//run git pull in bash script to update https-everywhere
+//bash can then run python to pull urls
 function loadDomains ()
 {
   var oReq = new XMLHttpRequest();
