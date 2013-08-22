@@ -1,5 +1,6 @@
 const gHttpTestRoot = "http://example.com/browser/browser/base/content/test/";
-const numTabs = 6;
+const numTabs = 1;
+var finished = false;
 
 var urls = [];
 
@@ -21,10 +22,11 @@ function test() {
     for(i=0; i<domains.length; i++) {
       var domain = domains[i].trim();
       if(domain != '') {
-        urls.push('https://'+domain);
+        urls.push('https://' + domain + '/');
       }
     }
-
+    urls = ['https://www.google.com/', 'https://www.eff.org/', 'https://github.com/'];
+    
     // start loading all the tabs
     for(i=0; i<numTabs; i++) {
       newTab();
@@ -32,34 +34,51 @@ function test() {
   }
   req.open("get", gHttpTestRoot + "top-1m.csv", true); // substitute your own URL/CSV here
   req.send();
+
 }
 
 function newTab() {
-  // open a new tab
-  var tab = gBrowser.addTab();
-  tab.linkedBrowser.stop();
-	gBrowser.selectedTab = tab;
-
   // start a test in this tab
   if(urls.length) {
+    // open a new tab
     var url = urls.pop();
-    tab.contentWindow.location = url;
-
+    //alert(url);
+    var tab = gBrowser.addTab(url);
+    gBrowser.selectedTab = tab;
+    //gBrowser.selectedBrowser.contentWindow.location = url;
+    
     // wait for the page to load
-    setTimeout(function(){
+    var intervalId = setInterval(function(){
+
       // detect mixed content blocker
-      if(PopupNotifications.getNotification("mixed-content-blocked", tab)) {
-        ok(false, "URL caused mixed content: "+url);
+      if(PopupNotifications.getNotification("mixed-content-blocked", gBrowser.selectedBrowser)) {
+        ok(false, "URL caused mixed content: "+ url);
 
         // todo: print this in the live window
         // and also save it to a file
       }
+      
 
       // close this tab, and open another
-      gBrowser.removeTab(tab);
-      newTab();
+      closeTab(tab);
     }, 6000);
+    
+    tab.linkedBrowser.addEventListener("error", function(){
+      clearInterval(intervalId);
+      closeTab(tab);
+    }, true);
+
   } else {
-    setTimeout(finish, 6500);
+    if (!finished) { 
+      finished = true;
+      setTimeout(finish, 10000);
+    }
   }
+}
+
+
+function closeTab(tab) {
+  gBrowser.selectedTab = tab;
+  gBrowser.removeCurrentTab();
+  newTab();
 }
