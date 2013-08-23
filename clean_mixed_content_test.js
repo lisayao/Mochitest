@@ -1,5 +1,5 @@
 const gHttpTestRoot = "http://example.com/browser/browser/base/content/test/";
-const numTabs = 1;
+const numTabs = 2;
 var finished = false;
 
 var urls = [];
@@ -14,6 +14,7 @@ function test() {
   Services.prefs.setBoolPref("security.mixed_content.block_display_content", false);
   Services.prefs.setBoolPref("security.mixed_content.block_active_content", true);
 
+
   // load the list of domains and generate urls
   var req = new XMLHttpRequest();
   req.onload = function() {
@@ -22,10 +23,10 @@ function test() {
     for(i=0; i<domains.length; i++) {
       var domain = domains[i].trim();
       if(domain != '') {
-        urls.push('https://' + domain + '/');
+        urls.push('https://' + domain);
       }
     }
-    urls = ['https://www.google.com/', 'https://www.eff.org/', 'https://github.com/'];
+    //urls = ['https://www.google.com/', 'https://www.eff.org/', 'https://github.com/'];
     
     // start loading all the tabs
     for(i=0; i<numTabs; i++) {
@@ -37,21 +38,23 @@ function test() {
 
 }
 
+
 function newTab() {
   // start a test in this tab
   if(urls.length) {
     // open a new tab
     var url = urls.pop();
-    //alert(url);
+    popup('loading url '+url+' ('+urls.length+' left)');
     var tab = gBrowser.addTab(url);
     gBrowser.selectedTab = tab;
     //gBrowser.selectedBrowser.contentWindow.location = url;
     
     // wait for the page to load
-    var intervalId = setInterval(function(){
+    var intervalId = window.setTimeout(function(){
 
+    
       // detect mixed content blocker
-      if(PopupNotifications.getNotification("mixed-content-blocked", gBrowser.selectedBrowser)) {
+      if(PopupNotifications.getNotification("mixed-content-blocked", gBrowser.getBrowserForTab(tab))) {
         ok(false, "URL caused mixed content: "+ url);
 
         // todo: print this in the live window
@@ -60,28 +63,35 @@ function newTab() {
       
 
       // close this tab, and open another
-      //closeTab(tab);
-    }, 6000);
-    
-      gBrowser.selectedTab = tab;
-      gBrowser.removeCurrentTab();
-    
-    tab.linkedBrowser.addEventListener("error", function(){
-      clearInterval(intervalId);
       closeTab(tab);
-    }, true);
+
+    }, 6000);
 
   } else {
     if (!finished) { 
       finished = true;
-      setTimeout(finish, 10000);
+      window.setTimeout(function(){
+        popup('running finish');
+        finish();
+      }, 10000);
     }
   }
 }
 
 
 function closeTab(tab) {
+  popup('closing tab');
   gBrowser.selectedTab = tab;
   gBrowser.removeCurrentTab();
   newTab();
+}
+
+function popup(text) {
+  try {
+    Components.classes['@mozilla.org/alerts-service;1'].
+              getService(Components.interfaces.nsIAlertsService).
+              showAlertNotification(null, "HTTPS Everywhere Tests", text, false, '', null);
+  } catch(e) {
+    // prevents runtime error on platforms that don't implement nsIAlertsService
+  }
 }
