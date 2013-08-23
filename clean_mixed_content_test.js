@@ -60,8 +60,11 @@ function newTab() {
       
 
       // close this tab, and open another
-      closeTab(tab);
+      //closeTab(tab);
     }, 6000);
+    
+      gBrowser.selectedTab = tab;
+      gBrowser.removeCurrentTab();
     
     tab.linkedBrowser.addEventListener("error", function(){
       clearInterval(intervalId);

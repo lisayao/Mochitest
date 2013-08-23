@@ -155,15 +155,3 @@ function checkForMixedContent() {
   ok(!notification, "Mixed Content Doorhanger appeared: (" + urlNumber() + ")" + domList[urlIndex]);
   nextURL();
 }
-
-
-
-//let functions that use interval take a variable interval. call using interval relevant to the tab opened.
-//somehow assign an interval for the tab opened based on whether interval is free
-//print the interval variable after clearInterval
-//interval is the return of setInterval - so maybe we have to loop to setInterval
-//(like loop through all intervals and use the first one that is free)
-
-//make cleanup take interval variable. Pass it either interval1 or interval2. Then in cleanup, pass nextURL 
-//interval1 or interval2 variable
-//Issue MixedTestsCompleted might get called before the slower tests are done
